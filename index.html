@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Konum Tabanlı Form Erişimi</title>
+  <meta charset="UTF-8" />
+</head>
+<body>
+  <h2>Konum kontrol ediliyor...</h2>
+  <p id="status">Lütfen bekleyin...</p>
+
+  <script>
+    const allowedLat = 40.952181;
+    const allowedLon = 29.139799;
+    const maxDistanceMeters = 100;
+
+    const googleFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdQi34MTmKKpDYR8tQJ5YN7MlIq0WZJGfefeToDAnlAVOfJgA/viewform";
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371e3;
+      const toRad = x => x * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error);
+
+    function success(pos) {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      const distance = getDistance(lat, lon, allowedLat, allowedLon);
+
+      if (distance <= maxDistanceMeters) {
+        document.getElementById("status").innerText = "Konum uygun. Forma yönlendiriliyorsunuz...";
+        setTimeout(() => {
+          window.location.href = googleFormUrl;
+        }, 1500);
+      } else {
+        document.getElementById("status").innerText = `Erişim reddedildi. ${Math.round(distance)} metre uzaktasınız.`;
+      }
+    }
+
+    function error(err) {
+      document.getElementById("status").innerText = "Konum bilgisi alınamadı. Lütfen konum iznine izin verin.";
+    }
+  </script>
+</body>
+</html>
